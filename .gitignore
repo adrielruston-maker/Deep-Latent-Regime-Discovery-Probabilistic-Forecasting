@@ -1,0 +1,20 @@
+# Virtual environment
+.venv/
+venv/
+
+# PyCharm
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Project-generated/local data
+checkpoints/
+data/
+
+# Common model artifacts
+*.pt
+*.pth
+*.ckpt
