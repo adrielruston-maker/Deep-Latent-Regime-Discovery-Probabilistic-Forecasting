@@ -58,6 +58,9 @@ def collect_predictions(
 
         return targets, mu, sigma, z
 
+
+
+
 if __name__ == '__main__':
     device = torch.device(
         "mps" if torch.backends.mps.is_available()
@@ -276,7 +279,7 @@ print(
 def calculate_calibration_curve(
         targets,
         mu,
-        simga
+        sigma
 ):
     nominal_levels = np.arange(
         0.10,
@@ -365,10 +368,10 @@ latent_df = pd.DataFrame(
 
 latent_df = latent_df.set_index("date")
 #sanity check
-print("\nLatent DF: ")
-print(latent_df.head())
-print(latent_df.shape)
-print(latent_df.describe())
+#print("\nLatent DF: ")
+#print(latent_df.head())
+#print(latent_df.shape)
+#print(latent_df.describe())
 
 def plot_latent_states(latent_df):
     latent_columns = ["z1", "z2", "z3"]
@@ -811,6 +814,73 @@ for _, row in rf_results.iterrows():
         f"Train={row['train_r2']:.4f}, "
         f"OOS={row['test_r2']:.4f}"
     )
+
+
+#BASELINE
+def collect_targets(data_loader):
+    targets = []
+
+    for _, y_batch in data_loader:
+        targets.append(y_batch)
+
+    return torch.cat(targets)
+
+train_targets = collect_targets(train_loader)
+
+def evaluate_constant_gaussian_baseline(train_targets, test_targets):
+    """
+    Constant Gaussian baseline.
+
+    Estimates the Gaussian mean and standard deviation using training
+    targets only, then applies that fixed distribution to every
+    test observation.
+    """
+
+    baseline_mean = train_targets.mean()
+    baseline_std = train_targets.std(unbiased=False)
+
+    baseline_mu = torch.full_like(
+        test_targets,
+        baseline_mean.item()
+    )
+
+    baseline_sigma = torch.full_like(
+        test_targets,
+        baseline_std.item()
+    )
+
+    baseline_nll = gaussian_nll(
+        baseline_mu,
+        baseline_sigma,
+        test_targets
+    )
+
+    baseline_mae = torch.mean(
+        torch.abs(test_targets - baseline_mu)
+    )
+
+    baseline_rmse = torch.sqrt(
+        torch.mean((test_targets - baseline_mu) ** 2)
+    )
+
+    return {
+        "nll": baseline_nll.item(),
+        "mae": baseline_mae.item(),
+        "rmse": baseline_rmse.item(),
+        "mu": baseline_mean.item(),
+        "sigma": baseline_std.item(),
+    }
+baseline_results = evaluate_constant_gaussian_baseline(
+    train_targets,
+    targets
+)
+
+print("\nConstant Gaussian Baseline:")
+print(f"Training Mean:  {baseline_results['mu']:.6f}")
+print(f"Training Sigma: {baseline_results['sigma']:.6f}")
+print(f"Test NLL:       {baseline_results['nll']:.6f}")
+print(f"Test MAE:       {baseline_results['mae']:.6f}")
+print(f"Test RMSE:      {baseline_results['rmse']:.6f}")
 
 
 
