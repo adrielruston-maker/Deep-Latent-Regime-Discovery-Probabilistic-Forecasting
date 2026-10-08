@@ -187,9 +187,8 @@ $$
 \mu_t = W_\mu z_t + b_\mu,
 $$
 
-$$
-\sigma_t = \operatorname{softplus}(W_\sigma z_t+b_\sigma)+\epsilon,
-$$
+$$\sigma_t = \text{softplus}(W_\sigma z_t + b_\sigma) + \epsilon$$
+
 
 where the softplus transformation guarantees $\sigma_t>0$.
 
