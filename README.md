@@ -75,24 +75,13 @@ $$
 Twenty-day annualized realized volatility is estimated as
 
 $$
-\hat{\sigma}_{t,20}
-=
-\sqrt{252}
-\sqrt{
-\frac{1}{19}
-\sum_{i=t-19}^{t}
-(r_i-\bar r_t)^2
-}.
+\hat{\sigma}_{t,20} = \sqrt{252} \sqrt{ \frac{1}{19} \sum_{i=t-19}^{t}(r_i-\bar r_t)^2 }.
 $$
 
 The forecasting target is the cumulative five-day forward SPY log return:
 
 $$
-Y_t
-=
-\sum_{j=1}^{5} r^{SPY}_{t+j}
-=
-\log\left(\frac{P_{t+5}}{P_t}\right).
+Y_t = \sum_{j=1}^{5} r^{SPY}_{t+j} = \log\left(\frac{P_{t+5}}{P_t}\right).
 $$
 
 ### Temporal Splitting and Leakage Control
@@ -121,24 +110,14 @@ constructed entirely from this latent representation.
 
 The architecture can be summarized as
 
-$$
-X_{t-59:t}
-\;\longrightarrow\;
-h_t
-\;\longrightarrow\;
-z_t
-\;\longrightarrow\;
-(\mu_t,\sigma_t),
+$$ 
+X_{t-59:t} \;\longrightarrow\; h_t \;\longrightarrow\; z_t \;\longrightarrow\;(\mu_t,\sigma_t),
 $$
 
 where
 
 $$
-X_{t-59:t}\in\mathbb{R}^{60\times10},
-\qquad
-h_t\in\mathbb{R}^{32},
-\qquad
-z_t\in\mathbb{R}^{3}.
+X_{t-59:t}\in\mathbb{R}^{60\times10}, \qquad h_t\in\mathbb{R}^{32}, \qquad z_t\in\mathbb{R}^{3}.
 $$
 
 Here, $X_{t-59:t}$ contains the 60-day sequence of standardized multi-asset
@@ -163,21 +142,13 @@ u_t = \sigma(W_u x_t + U_u h_{t-1} + b_u),
 $$
 
 $$
-\tilde{h}_t =
-\tanh\left(
-W_h x_t +
-U_h(r_t \odot h_{t-1}) +
-b_h
-\right),
+\tilde{h}_t = \tanh\left(W_h x_t + U_h(r_t \odot h_{t-1}) + b_h \right),
 $$
 
 and
 
 $$
-h_t =
-(1-u_t)\odot\tilde{h}_t
-+
-u_t\odot h_{t-1}.
+h_t =(1-u_t)\odot\tilde{h}_t+ u_t\odot h_{t-1}.
 $$
 
 The gating mechanism allows the network to learn which historical information
@@ -196,9 +167,7 @@ The 32-dimensional final hidden state is projected into a three-dimensional
 latent representation:
 
 $$
-z_t = W_z h_t + b_z,
-\qquad
-z_t\in\mathbb{R}^{3}.
+z_t = W_z h_t + b_z, \qquad z_t\in\mathbb{R}^{3}.
 $$
 
 No regime labels, clustering loss, or predefined economic states are used to
@@ -219,8 +188,7 @@ $$
 $$
 
 $$
-\sigma_t =
-\operatorname{softplus}(W_\sigma z_t+b_\sigma)+\epsilon,
+\sigma_t = \operatorname{softplus}(W_\sigma z_t+b_\sigma)+\epsilon,
 $$
 
 where the softplus transformation guarantees $\sigma_t>0$.
@@ -228,9 +196,7 @@ where the softplus transformation guarantees $\sigma_t>0$.
 The resulting conditional forecast is
 
 $$
-Y_t \mid X_{t-59:t}
-\sim
-\mathcal{N}(\mu_t,\sigma_t^2),
+Y_t \mid X_{t-59:t} \sim \mathcal{N}(\mu_t,\sigma_t^2),
 $$
 
 where $Y_t$ is the five-day forward cumulative SPY log return.
@@ -247,42 +213,25 @@ The model is trained by minimizing the Gaussian negative log-likelihood (NLL) of
 For each observation, the model produces a conditional mean $\mu_t$ and standard deviation $\sigma_t > 0$, defining
 
 $$
-Y_t \mid X_{t-59:t}
-\sim
-\mathcal{N}(\mu_t,\sigma_t^2).
+Y_t \mid X_{t-59:t} \sim \mathcal{N}(\mu_t,\sigma_t^2).
 $$
 
 The Gaussian probability density is
 
 $$
-p(y_t \mid X_{t-59:t})
-=
-\frac{1}{\sigma_t\sqrt{2\pi}}
-\exp\left(
--\frac{(y_t-\mu_t)^2}{2\sigma_t^2}
-\right).
+p(y_t \mid X_{t-59:t}) = \frac{1}{\sigma_t\sqrt{2\pi}} \exp\left(-\frac{(y_t-\mu_t)^2}{2\sigma_t^2} \right).
 $$
 
 Taking the negative logarithm gives the per-observation loss
 
 $$
-\mathcal{L}_t
-=
-\log\sigma_t
-+
-\frac{(y_t-\mu_t)^2}{2\sigma_t^2}
-+
-\frac{1}{2}\log(2\pi).
+\mathcal{L}_t = \log\sigma_t + \frac{(y_t-\mu_t)^2}{2\sigma_t^2} + \frac{1}{2}\log(2\pi).
 $$
 
 The training objective minimizes the average NLL across observations:
 
 $$
-\mathcal{L}(\theta)
-=
-\frac{1}{N}
-\sum_{t=1}^{N}
-\mathcal{L}_t(\theta),
+\mathcal{L}(\theta) = \frac{1}{N} \sum_{t=1}^{N} \mathcal{L}_t(\theta),
 $$
 
 where $\theta$ denotes the trainable parameters of the GRU encoder, latent projection, and probabilistic output heads.
@@ -298,52 +247,31 @@ Although the model is not provided with regime labels, its latent representation
 Both Gaussian parameters are functions of the latent state:
 
 $$
-\mu_t = f_\mu(z_t),
-\qquad
-\sigma_t = f_\sigma(z_t).
+\mu_t = f_\mu(z_t), \qquad \sigma_t = f_\sigma(z_t).
 $$
 
 Therefore, the forecasting loss depends on the latent representation through
 
 $$
-\mathcal{L}_t
-=
-\mathcal{L}_t
-\left(
-f_\mu(z_t),
-f_\sigma(z_t),
-y_t
-\right).
+\mathcal{L}_t = \mathcal{L}_t \left(f_\mu(z_t), f_\sigma(z_t), y_t \right).
 $$
 
 During backpropagation, gradients propagate through both output heads into the latent projection and GRU encoder:
 
 $$
-\frac{\partial \mathcal{L}_t}{\partial z_t}
-=
-\frac{\partial \mathcal{L}_t}{\partial \mu_t}
-\frac{\partial \mu_t}{\partial z_t}
-+
-\frac{\partial \mathcal{L}_t}{\partial \sigma_t}
-\frac{\partial \sigma_t}{\partial z_t}.
+\frac{\partial \mathcal{L}_t}{\partial z_t} = \frac{\partial \mathcal{L}_t}{\partial \mu_t} \frac{\partial \mu_t}{\partial z_t} + \frac{\partial \mathcal{L}_t}{\partial \sigma_t} \frac{\partial \sigma_t}{\partial z_t}.
 $$
 
 For the Gaussian NLL,
 
 $$
-\frac{\partial \mathcal{L}_t}{\partial \mu_t}
-=
-\frac{\mu_t-y_t}{\sigma_t^2},
+\frac{\partial \mathcal{L}_t}{\partial \mu_t} = \frac{\mu_t-y_t}{\sigma_t^2},
 $$
 
 while
 
 $$
-\frac{\partial \mathcal{L}_t}{\partial \sigma_t}
-=
-\frac{1}{\sigma_t}
--
-\frac{(y_t-\mu_t)^2}{\sigma_t^3}.
+\frac{\partial \mathcal{L}_t}{\partial \sigma_t} = \frac{1}{\sigma_t} - \frac{(y_t-\mu_t)^2}{\sigma_t^3}.
 $$
 
 The first gradient pushes the predicted conditional mean toward the observed target. The second adjusts the predicted uncertainty according to the size of the forecast error.
@@ -404,9 +332,7 @@ However, the primary objective of the model is probabilistic rather than purely 
 To evaluate whether the predicted conditional distributions appropriately describe the realized observations, standardized residuals are defined as
 
 $$
-e_t
-=
-\frac{Y_t-\mu_t}{\sigma_t}.
+e_t = \frac{Y_t-\mu_t}{\sigma_t}.
 $$
 
 Under a correctly specified Gaussian conditional distribution, these residuals should approximately follow
@@ -437,10 +363,7 @@ A probabilistic forecasting model should produce prediction intervals whose empi
 For a central prediction interval with nominal coverage $p$, the Gaussian forecast interval takes the form
 
 $$
-\left[
-\mu_t-z_p\sigma_t,\;
-\mu_t+z_p\sigma_t
-\right],
+\left[\mu_t-z_p\sigma_t,\; \mu_t+z_p\sigma_t \right],
 $$
 
 where $z_p$ denotes the corresponding standard-normal critical value.
@@ -617,13 +540,7 @@ volatility, with additional dependence on the recent path of equity returns.
 A useful empirical summary is
 
 $$
-z_t^{PC1}
-\approx
-f(
-\text{current equity volatility},
-\text{recent equity return path},
-\text{other market-state information}
-).
+z_t^{PC1} \approx f(\text{current equity volatility}, \text{recent equity return path}, \text{other market-state information}).
 $$
 
 The evidence does **not** establish the existence of discrete market regimes.
@@ -712,9 +629,7 @@ single fixed mean and sigma.
 The predictive distribution was assumed to be conditionally Gaussian:
 
 $$
-Y_t \mid X_{t-59:t}
-\sim
-\mathcal{N}(\mu_t,\sigma_t^2).
+Y_t \mid X_{t-59:t} \sim \mathcal{N}(\mu_t,\sigma_t^2).
 $$
 
 Out of sample calibration is reasonably strong, but the standardized residuals
